@@ -1,4 +1,38 @@
 /**
+ * Location accuracy levels for power management.
+ * Higher accuracy = more battery consumption.
+ */
+export enum LocationAccuracy {
+    /**
+     * Highest accuracy (GPS) - High battery consumption
+     * Android: PRIORITY_HIGH_ACCURACY
+     * iOS: kCLLocationAccuracyBest
+     */
+    HIGH = 100,
+
+    /**
+     * Balanced accuracy (GPS + Network) - Medium battery consumption
+     * Android: PRIORITY_BALANCED_POWER_ACCURACY
+     * iOS: kCLLocationAccuracyNearestTenMeters
+     */
+    BALANCED = 102,
+
+    /**
+     * Low accuracy (Network) - Low battery consumption
+     * Android: PRIORITY_LOW_POWER
+     * iOS: kCLLocationAccuracyHundredMeters
+     */
+    LOW = 104,
+
+    /**
+     * Passive updates - Minimal battery consumption
+     * Android: PRIORITY_PASSIVE
+     * iOS: kCLLocationAccuracyThreeKilometers
+     */
+    PASSIVE = 105
+}
+
+/**
  * The options for configuring a watcher that listens for location updates.
  */
 export interface WatcherOptions {
@@ -7,7 +41,7 @@ export interface WatcherOptions {
      * provide location updates whether the app is in the background or the
      * foreground. If it is not defined, location updates are only
      * guaranteed in the foreground. This is true on both platforms.
-     * 
+     *
      * On Android, a notification must be shown to continue receiving
      * location updates in the background. This option specifies the text of
      * that notification.
@@ -37,6 +71,12 @@ export interface WatcherOptions {
      * @default 0
      */
     distanceFilter?: number;
+    /**
+     * The desired accuracy level for location updates.
+     * Higher accuracy levels consume more battery power.
+     * @default LocationAccuracy.BALANCED
+     */
+    accuracy?: LocationAccuracy;
 }
 
 /**
@@ -90,7 +130,7 @@ export interface BackgroundGeolocationPlugin {
      * Adds a watcher for location updates.
      * The watcher will be invoked with the latest location whenever it is available.
      * If an error occurs, the callback will be invoked with the error.
-     * 
+     *
      * @param options the watcher options
      * @param callback the callback to be invoked when a new location is available or an error occurs
      * @returns a promise that resolves to a unique identifier for the watcher ID

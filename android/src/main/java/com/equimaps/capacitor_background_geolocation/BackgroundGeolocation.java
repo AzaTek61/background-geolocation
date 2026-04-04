@@ -156,11 +156,12 @@ public class BackgroundGeolocation extends Plugin {
 
             backgroundNotification = builder.build();
         }
-        service.addWatcher(
-                call.getCallbackId(),
-                backgroundNotification,
-                call.getFloat("distanceFilter", 0f)
-        );
+		service.addWatcher(
+				call.getCallbackId(),
+				backgroundNotification,
+				call.getFloat("distanceFilter", 0f),
+				call.getInt("accuracy", 102)
+		);
     }
 
     @PermissionCallback

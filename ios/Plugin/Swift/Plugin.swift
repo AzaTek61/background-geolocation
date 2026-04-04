@@ -94,15 +94,36 @@ public class BackgroundGeolocation: CAPPlugin,
             )
             let manager = watcher.locationManager
             manager.delegate = self
-            let externalPower = [
-                .full,
-                .charging
-            ].contains(UIDevice.current.batteryState)
-            manager.desiredAccuracy = (
-                externalPower
-                ? kCLLocationAccuracyBestForNavigation
-                : kCLLocationAccuracyBest
-            )
+
+            // Configure accuracy based on parameter (default: BALANCED = 102)
+            let accuracy = call.getInt("accuracy") ?? 102
+
+            switch accuracy {
+            case 100: // HIGH
+                 let isCharging = [
+                    .charging,
+                    .full
+                 ].contains(UIDevice.current.batteryState)
+
+                if isCharging {
+                    manager.desiredAccuracy = kCLLocationAccuracyBestForNavigation
+                } else {
+                    manager.desiredAccuracy = kCLLocationAccuracyBest
+                }
+                manager.activityType = .otherNavigation
+            case 102: // BALANCED (Default)
+                manager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
+                manager.activityType = .other
+            case 104: // LOW
+                manager.desiredAccuracy = kCLLocationAccuracyHundredMeters
+                manager.activityType = .other
+            case 105: // PASSIVE
+                manager.desiredAccuracy = kCLLocationAccuracyThreeKilometers
+                manager.activityType = .other
+            default:
+                manager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
+                manager.activityType = .other
+            }
             var distanceFilter = call.getDouble("distanceFilter")
             // It appears that setting manager.distanceFilter to 0 can prevent
             // subsequent location updates. See issue #88.
