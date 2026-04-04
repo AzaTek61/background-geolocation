@@ -1,7 +1,46 @@
-# Background Geolocation
-A Capacitor plugin that lets you receive geolocation updates even while the app is backgrounded. Only iOS and Android platforms are supported.
+# @azatek/background-geolocation
+
+Enhanced fork of [@capacitor-community/background-geolocation](https://github.com/capacitor-community/background-geolocation) with configurable GPS accuracy modes for battery optimization.
+
+## Additional Features
+
+- **Configurable GPS Accuracy**: Choose between HIGH, BALANCED, LOW, and PASSIVE modes
+- **Battery Optimization**: Dynamically switch accuracy based on proximity to points of interest
+- **Android Priority Support**: Uses modern LocationRequest.Builder with Priority levels
+- **iOS Accuracy Control**: Configurable CLLocationManager accuracy settings
+
+## Installation
+
+```bash
+npm install @azatek/background-geolocation
+npx cap update
+```
 
 ## Usage
+
+```typescript
+import { BackgroundGeolocation, LocationAccuracy } from '@azatek/background-geolocation';
+
+const watcherId = await BackgroundGeolocation.addWatcher({
+  backgroundMessage: "Tracking location",
+  backgroundTitle: "App Active",
+  requestPermissions: true,
+  stale: false,
+  distanceFilter: 50,
+  accuracy: LocationAccuracy.BALANCED  // NEW: Accuracy control
+}, (location) => {
+  console.log(location);
+});
+```
+
+## Accuracy Modes
+
+- **LocationAccuracy.HIGH (100)**: GPS only - High battery usage, best accuracy
+- **LocationAccuracy.BALANCED (102)**: GPS + Network - Medium battery, good accuracy
+- **LocationAccuracy.LOW (104)**: Network only - Low battery, approximate location
+- **LocationAccuracy.PASSIVE (105)**: Minimal battery, uses other apps' location requests
+
+## Original Usage
 
 ```javascript
 import {registerPlugin} from "@capacitor/core";
@@ -28,7 +67,7 @@ BackgroundGeolocation.addWatcher(
         // The title of the notification mentioned above. Defaults to "Using
         // your location".
         backgroundTitle: "Tracking You.",
-        
+
         // Whether permissions should be requested from the user automatically,
         // if they are not already granted. Defaults to "true".
         requestPermissions: true,
@@ -118,29 +157,15 @@ function guess_location(callback, timeout) {
 ### Typescript support
 
 ```typescript
-import {BackgroundGeolocationPlugin} from "@capacitor-community/background-geolocation";
+import {BackgroundGeolocationPlugin} from "@azatek/background-geolocation";
 const BackgroundGeolocation = registerPlugin<BackgroundGeolocationPlugin>("BackgroundGeolocation");
 ```
 
-## Installation
-
-Different versions of the plugin support different versions of Capacitor:
+## Version Compatibility
 
 | Capacitor  | Plugin |
 |------------|--------|
-| v2         | v0.3   |
-| v3         | v1     |
-| v4         | v1     |
-| v5         | v1     |
-| v6         | v1     |
-| v7         | v1     |
-
-Read the documentation for v0.3 [here](https://github.com/capacitor-community/background-geolocation/tree/0.3.x).
-
-```sh
-npm install @capacitor-community/background-geolocation
-npx cap update
-```
+| v7         | v1.3+  |
 
 ### iOS
 Add the following keys to `Info.plist.`:
@@ -212,7 +237,17 @@ Configration specific to Android can be made in `strings.xml`:
 
 ```
 
+## Credits
+
+Based on [@capacitor-community/background-geolocation](https://github.com/capacitor-community/background-geolocation)
+
 ## Changelog
+
+### v1.3.0
+- Add configurable GPS accuracy modes (HIGH/BALANCED/LOW/PASSIVE)
+- Android: Modern LocationRequest.Builder API with Priority levels
+- iOS: CLLocationManager accuracy configuration
+- Battery optimization through dynamic accuracy control
 
 ### v1.2.26
 - Add support for Swift Package Manager (SPM).

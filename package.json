@@ -1,13 +1,29 @@
 {
-    "name": "@capacitor-community/background-geolocation",
-    "version": "1.2.26",
-    "description": "Receive geolocation updates even while the app is in the background.",
+    "name": "@azatek/background-geolocation",
+    "version": "1.3.0",
+    "description": "Capacitor plugin for background geolocation tracking with configurable GPS accuracy modes (HIGH/BALANCED/LOW/PASSIVE) for battery optimization. Fork of @capacitor-community/background-geolocation with enhanced accuracy control.",
+    "main": "dist/plugin.cjs.js",
+    "module": "dist/esm/index.js",
+    "types": "dist/esm/index.d.ts",
+    "keywords": [
+        "capacitor",
+        "plugin",
+        "geolocation",
+        "background",
+        "gps",
+        "location",
+        "tracking",
+        "accuracy",
+        "battery-optimization",
+        "android",
+        "ios"
+    ],
     "repository": {
         "type": "git",
-        "url": "https://github.com/capacitor-community/background-geolocation"
+        "url": "https://github.com/AzaTek61/background-geolocation.git"
     },
+    "author": "AzaTek",
     "license": "MIT",
-    "author": "James Diacono",
     "types": "definitions.d.ts",
     "files": [
         "CapacitorCommunityBackgroundGeolocation.podspec",
