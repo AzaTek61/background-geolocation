@@ -21,8 +21,18 @@
     },
     "author": "AzaTek",
     "license": "MIT",
+    "main": "index.js",
+    "module": "index.js",
     "types": "definitions.d.ts",
+    "exports": {
+        ".": {
+            "types": "./definitions.d.ts",
+            "import": "./index.js",
+            "require": "./index.js"
+        }
+    },
     "files": [
+        "index.js",
         "CapacitorCommunityBackgroundGeolocation.podspec",
         "Package.swift",
         "android/build.gradle",

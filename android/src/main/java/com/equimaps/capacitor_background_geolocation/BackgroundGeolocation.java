@@ -42,7 +42,8 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
                 @Permission(
                         strings = {
                                 Manifest.permission.ACCESS_COARSE_LOCATION,
-                                Manifest.permission.ACCESS_FINE_LOCATION
+                                Manifest.permission.ACCESS_FINE_LOCATION,
+                                Manifest.permission.FOREGROUND_SERVICE_LOCATION
                         },
                         alias = "location"
                 )
@@ -70,23 +71,12 @@ public class BackgroundGeolocation extends Plugin {
         } catch (SecurityException ignore) {}
     }
 
-    @PluginMethod(returnType = PluginMethod.RETURN_CALLBACK)
-    public void addWatcher(final PluginCall call) {
-        if (service == null) {
-            call.reject("Service not running.");
+    private void startWatcher(PluginCall call) {
+        if (!isLocationEnabled(getContext())) {
+            call.reject("Location services disabled.", "NOT_AUTHORIZED");
             return;
         }
-        call.setKeepAlive(true);
 
-        if (getPermissionState("location") != PermissionState.GRANTED) {
-            if (call.getBoolean("requestPermissions", true)) {
-                requestPermissionForAlias("location", call, "locationPermissionsCallback");
-            } else {
-                call.reject("Permission denied.", "NOT_AUTHORIZED");
-            }
-        } else if (!isLocationEnabled(getContext())) {
-            call.reject("Location services disabled.", "NOT_AUTHORIZED");
-        }
         if (call.getBoolean("stale", false)) {
             fetchLastLocation(call);
         }
@@ -164,6 +154,26 @@ public class BackgroundGeolocation extends Plugin {
 		);
     }
 
+    @PluginMethod(returnType = PluginMethod.RETURN_CALLBACK)
+    public void addWatcher(final PluginCall call) {
+        if (service == null) {
+            call.reject("Service not running.");
+            return;
+        }
+        call.setKeepAlive(true);
+
+        if (getPermissionState("location") != PermissionState.GRANTED) {
+            if (call.getBoolean("requestPermissions", true)) {
+                requestPermissionForAlias("location", call, "locationPermissionsCallback");
+            } else {
+                call.reject("Permission denied.", "NOT_AUTHORIZED");
+            }
+            return;
+        }
+
+        startWatcher(call);
+    }
+
     @PermissionCallback
     private void locationPermissionsCallback(PluginCall call) {
 
@@ -171,15 +181,13 @@ public class BackgroundGeolocation extends Plugin {
             call.reject("User denied location permission", "NOT_AUTHORIZED");
             return;
         }
-        if (call.getBoolean("stale", false)) {
-            fetchLastLocation(call);
-        }
+
         if (service != null) {
             service.onPermissionsGranted();
-            // The handleOnResume method will now be called, and we don't need it to call
-            // service.onPermissionsGranted again so we reset this flag.
             stoppedWithoutPermissions = false;
         }
+
+        startWatcher(call);
     }
 
     @PluginMethod()

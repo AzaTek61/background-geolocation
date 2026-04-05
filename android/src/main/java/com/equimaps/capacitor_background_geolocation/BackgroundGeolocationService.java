@@ -16,6 +16,7 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.Priority;
 
 import java.util.HashSet;
 
@@ -118,7 +119,11 @@ public class BackgroundGeolocationService extends Service {
             LocationCallback callback = new LocationCallback(){
                 @Override
                 public void onLocationResult(LocationResult locationResult) {
+                    Logger.debug("onLocationResult called");
                     Location location = locationResult.getLastLocation();
+                    if (location != null) {
+                        Logger.debug("Location received: " + location.getLatitude() + ", " + location.getLongitude());
+                    }
                     Intent intent = new Intent(ACTION_BROADCAST);
                     intent.putExtra("location", location);
                     intent.putExtra("id", id);
@@ -128,6 +133,7 @@ public class BackgroundGeolocationService extends Service {
                 }
                 @Override
                 public void onLocationAvailability(LocationAvailability availability) {
+                    Logger.debug("Location availability: " + availability.isLocationAvailable());
                     if (!availability.isLocationAvailable()) {
                         Logger.debug("Location not available");
                     }
@@ -146,12 +152,16 @@ public class BackgroundGeolocationService extends Service {
             // permissions are not yet granted. Rather than check the permissions, which is fiddly,
             // we simply ignore the exception.
             try {
+                Logger.debug("Requesting location updates with priority: " + priority + ", interval: " + interval);
                 watcher.client.requestLocationUpdates(
                         watcher.locationRequest,
                         watcher.locationCallback,
                         null
                 );
-            } catch (SecurityException ignore) {}
+                Logger.debug("Location updates requested successfully");
+            } catch (SecurityException e) {
+                Logger.error("SecurityException when requesting location updates", e);
+            }
 
             // Promote the service to the foreground if necessary.
             // Ideally we would only call 'startForeground' if the service is not already
