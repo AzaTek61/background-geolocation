@@ -1,6 +1,6 @@
 {
     "name": "@azatek/background-geolocation",
-    "version": "1.0.0",
+    "version": "7.0.0",
     "description": "Capacitor plugin for background geolocation tracking with configurable GPS accuracy modes (HIGH/BALANCED/LOW/PASSIVE) for battery optimization. Fork of @capacitor-community/background-geolocation with enhanced accuracy control.",
     "keywords": [
         "capacitor",
