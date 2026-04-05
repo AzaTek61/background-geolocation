@@ -85,45 +85,38 @@ public class BackgroundGeolocationService extends Service {
 			
 			// Map accuracy enum to Android Priority
 			int priority;
-			long interval;
-			
+
 			switch (accuracy) {
 				case 100: // HIGH
 					priority = Priority.PRIORITY_HIGH_ACCURACY;
-					interval = 5000; // 5 seconds
 					break;
 				case 102: // BALANCED (Default)
 					priority = Priority.PRIORITY_BALANCED_POWER_ACCURACY;
-					interval = 10000; // 10 seconds
 					break;
 				case 104: // LOW
 					priority = Priority.PRIORITY_LOW_POWER;
-					interval = 30000; // 30 seconds
 					break;
 				case 105: // PASSIVE
 					priority = Priority.PRIORITY_PASSIVE;
-					interval = 60000; // 60 seconds
 					break;
 				default:
 					priority = Priority.PRIORITY_BALANCED_POWER_ACCURACY;
-					interval = 10000;
 			}
-			
-			// Use modern LocationRequest.Builder API
+
+			// Match iOS behavior: Only update based on distance, not time intervals
+			// When distanceFilter is 0, use a minimal interval to get updates
+			// When distanceFilter > 0, use a very large interval so only distance triggers updates
+			long interval = (distanceFilter > 0) ? Long.MAX_VALUE : 1000;
+
 			LocationRequest locationRequest = new LocationRequest.Builder(priority, interval)
 					.setMinUpdateDistanceMeters(distanceFilter)
 					.setWaitForAccurateLocation(false)
-					.setMaxUpdateDelayMillis(interval)
 					.build();
 
             LocationCallback callback = new LocationCallback(){
                 @Override
                 public void onLocationResult(LocationResult locationResult) {
-                    Logger.debug("onLocationResult called");
                     Location location = locationResult.getLastLocation();
-                    if (location != null) {
-                        Logger.debug("Location received: " + location.getLatitude() + ", " + location.getLongitude());
-                    }
                     Intent intent = new Intent(ACTION_BROADCAST);
                     intent.putExtra("location", location);
                     intent.putExtra("id", id);
@@ -133,9 +126,8 @@ public class BackgroundGeolocationService extends Service {
                 }
                 @Override
                 public void onLocationAvailability(LocationAvailability availability) {
-                    Logger.debug("Location availability: " + availability.isLocationAvailable());
                     if (!availability.isLocationAvailable()) {
-                        Logger.debug("Location not available");
+                        Logger.warn("Location not available - check if GPS is enabled");
                     }
                 }
             };
@@ -152,13 +144,11 @@ public class BackgroundGeolocationService extends Service {
             // permissions are not yet granted. Rather than check the permissions, which is fiddly,
             // we simply ignore the exception.
             try {
-                Logger.debug("Requesting location updates with priority: " + priority + ", interval: " + interval);
                 watcher.client.requestLocationUpdates(
                         watcher.locationRequest,
                         watcher.locationCallback,
                         null
                 );
-                Logger.debug("Location updates requested successfully");
             } catch (SecurityException e) {
                 Logger.error("SecurityException when requesting location updates", e);
             }

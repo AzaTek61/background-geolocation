@@ -35,10 +35,31 @@ const watcherId = await BackgroundGeolocation.addWatcher({
 
 ## Accuracy Modes
 
-- **LocationAccuracy.HIGH (100)**: GPS only - High battery usage, best accuracy
-- **LocationAccuracy.BALANCED (102)**: GPS + Network - Medium battery, good accuracy
-- **LocationAccuracy.LOW (104)**: Network only - Low battery, approximate location
-- **LocationAccuracy.PASSIVE (105)**: Minimal battery, uses other apps' location requests
+| Mode | Value | Description | Accuracy Level |
+|------|-------|-------------|----------------|
+| **HIGH** | 100 | Best accuracy, high battery usage | Android: PRIORITY_HIGH_ACCURACY<br>iOS: kCLLocationAccuracyBest |
+| **BALANCED** | 102 | Good accuracy (default) | Android: PRIORITY_BALANCED_POWER_ACCURACY<br>iOS: kCLLocationAccuracyNearestTenMeters |
+| **LOW** | 104 | Approximate location | Android: PRIORITY_LOW_POWER<br>iOS: kCLLocationAccuracyHundredMeters |
+| **PASSIVE** | 105 | Minimal battery | Android: PRIORITY_PASSIVE<br>iOS: kCLLocationAccuracyThreeKilometers |
+
+### Platform Behavior
+
+**Both platforms now behave identically:**
+- Location updates are triggered **only by distance changes**, not time intervals
+- `distanceFilter: 50` → Updates only when device moves 50+ meters
+- `distanceFilter: 0` → Updates on any movement (controlled by accuracy setting)
+
+**Important:**
+- ⚠️ With `distanceFilter > 0`, you will **NOT** receive updates when stationary
+- ✅ This matches iOS behavior and saves battery
+- 💡 Set `distanceFilter: 0` if you need updates even when stationary
+
+**Android-specific:**
+- Uses `FusedLocationProviderClient` with very large time interval to effectively disable time-based updates
+
+**iOS-specific:**
+- Uses `CLLocationManager.distanceFilter` natively
+- HIGH mode automatically switches to `kCLLocationAccuracyBestForNavigation` when device is charging
 
 ## Original Usage
 
