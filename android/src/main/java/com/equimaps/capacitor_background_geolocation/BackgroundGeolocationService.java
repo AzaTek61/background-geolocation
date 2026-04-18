@@ -85,29 +85,31 @@ public class BackgroundGeolocationService extends Service {
 			
 			// Map accuracy enum to Android Priority
 			int priority;
+			long interval;
 
 			switch (accuracy) {
 				case 100: // HIGH
 					priority = Priority.PRIORITY_HIGH_ACCURACY;
+					interval = 1000; // 1 seconds
 					break;
 				case 102: // BALANCED (Default)
 					priority = Priority.PRIORITY_BALANCED_POWER_ACCURACY;
+					interval = 5000; // 5 seconds
 					break;
 				case 104: // LOW
 					priority = Priority.PRIORITY_LOW_POWER;
+					interval = 20000; // 20 seconds
 					break;
 				case 105: // PASSIVE
 					priority = Priority.PRIORITY_PASSIVE;
+					interval = 60000; // 60 seconds
 					break;
 				default:
 					priority = Priority.PRIORITY_BALANCED_POWER_ACCURACY;
+					interval = 10000;
 			}
 
-			// Match iOS behavior: Only update based on distance, not time intervals
-			// When distanceFilter is 0, use a minimal interval to get updates
-			// When distanceFilter > 0, use a very large interval so only distance triggers updates
-			long interval = (distanceFilter > 0) ? Long.MAX_VALUE : 1000;
-
+			// Use modern LocationRequest.Builder API
 			LocationRequest locationRequest = new LocationRequest.Builder(priority, interval)
 					.setMinUpdateDistanceMeters(distanceFilter)
 					.setWaitForAccurateLocation(false)

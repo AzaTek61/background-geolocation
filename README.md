@@ -44,22 +44,24 @@ const watcherId = await BackgroundGeolocation.addWatcher({
 
 ### Platform Behavior
 
-**Both platforms now behave identically:**
-- Location updates are triggered **only by distance changes**, not time intervals
-- `distanceFilter: 50` → Updates only when device moves 50+ meters
-- `distanceFilter: 0` → Updates on any movement (controlled by accuracy setting)
+**Android:**
+- Location updates are triggered by **both distance and time intervals**
+- Each accuracy mode has a specific update interval:
+  - HIGH: 1 second
+  - BALANCED: 5 seconds
+  - LOW: 20 seconds
+  - PASSIVE: 60 seconds
+- `distanceFilter` specifies minimum distance in meters between updates
+- Uses `FusedLocationProviderClient` with modern LocationRequest.Builder API
+
+**iOS:**
+- Uses `CLLocationManager.distanceFilter` natively
+- Location updates triggered by distance changes
+- HIGH mode automatically switches to `kCLLocationAccuracyBestForNavigation` when device is charging
 
 **Important:**
-- ⚠️ With `distanceFilter > 0`, you will **NOT** receive updates when stationary
-- ✅ This matches iOS behavior and saves battery
-- 💡 Set `distanceFilter: 0` if you need updates even when stationary
-
-**Android-specific:**
-- Uses `FusedLocationProviderClient` with very large time interval to effectively disable time-based updates
-
-**iOS-specific:**
-- Uses `CLLocationManager.distanceFilter` natively
-- HIGH mode automatically switches to `kCLLocationAccuracyBestForNavigation` when device is charging
+- 💡 Lower intervals (HIGH) provide more frequent updates but consume more battery
+- 💡 Combine appropriate accuracy mode with `distanceFilter` to optimize battery usage
 
 ## Original Usage
 
